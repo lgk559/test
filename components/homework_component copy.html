@@ -137,7 +137,16 @@
         </div>
 
         <div id="app">
-          <rundata_focus :stared="localStorage" :data2="allData" :local_storage2="localStorage" v-if='allData[0]'>
+          <div class="row">
+            <div class="col-12"><h2>色彩表示</h2></div>
+            <div class="col-lg-4 col-6"><p><span class="aqi status-aqi1"></span>良好</p></div>
+            <div class="col-lg-4 col-6"><p><span class="aqi status-aqi2"></span>普通</p></div>
+            <div class="col-lg-4 col-6"><p><span class="aqi status-aqi3"></span>對敏感族群不健康</p></div>
+            <div class="col-lg-4 col-6"><p><span class="aqi status-aqi4"></span>對所有族群不健康</p></div>
+            <div class="col-lg-4 col-6"><p><span class="aqi status-aqi5"></span>非常不健康</p></div>
+            <div class="col-lg-4 col-6"><p><span class="aqi status-aqi6"></span>危害</p></div>
+          </div>
+          <rundata_focus :stared="localStorage" :data2="allData" :local_storage2="localStorage" v-if='allData[0]' @statuscss2="statusCss" @tostared="upLocation">
 
           </rundata_focus>
 
@@ -152,7 +161,7 @@
     <div class="col-12 mb-3"><h2>關注的城市</h2></div>
     <div class='col-lg-6 col-sm-12 mt-3' v-for="(item,index) in data2" :value="item" v-if="item.focus">
       <div class="card"  :class="item.isClass">
-        <div class="card-header" @click.prevent="item.focus=!item.focus">{{item.SiteName}}
+        <div class="card-header" @click.prevent="item.focus=!item.focus, toStaredF(item)">{{item.SiteName}}
           <a href="#" class="float-right" >     
             <div v-if="item.focus == false">
               <i class="far fa-star"></i>
@@ -221,16 +230,28 @@
           Vue.component('rundata_focus', {
             template: '#card_focus',
             props: ['data2','local_storage2','local_storage2'],
-            created: function(){
-              const vm = this;
-              vm.data2.forEach((data2_item)=>{
-                vm.local_storage2.forEach((locaData_item)=>{
-                  if(data2_item.SiteId == locaData_item){
-                    data2_item.focus = true;
-                  }
-                })
+            created: function () {
+              this.init()
+            },
+            methods: {
+              init: function(){
+                const vm = this;
+                vm.data2.forEach((data2_item)=>{
+                  vm.local_storage2.forEach((locaData_item)=>{
 
-              })
+                    if(data2_item.SiteId == locaData_item){
+                      data2_item.focus = true;
+                      this.$emit('statuscss2', 'SiteId',data2_item.SiteId);
+                    }
+                  })
+
+                })
+              },
+              toStaredF: function(item){
+                console.log(item.SiteId)
+                this.$emit('tostared',item.SiteId) 
+                //加入星星陣列並傳出給主體加入瀏覽器暫存
+              }
             }
 
           });
@@ -255,20 +276,17 @@
                   arr.push(item.County)
                 }
               })
-
-              
             },
             methods: {
               getLocaData: function () {
                 this.locaData = [];
                 let isOption = document.querySelector("select").value;
-                this.$emit('statuscss2', isOption);
+                this.$emit('statuscss2', 'County',isOption);
               },
               toStaredF: function(item){
                 console.log(item.SiteId)
                 this.$emit('tostared',item.SiteId) 
                 //加入星星陣列並傳出給主體加入瀏覽器暫存
-
               }
             }
 
@@ -278,7 +296,7 @@
             el: '#app',
             data: {
               allData: [],
-              localStorage: [1,2], //歷史關注
+              localStorage: [], //歷史關注
               useSelect: [],
               stared: [], //目前關注
               // filter: '', //目前所選城市
@@ -305,10 +323,6 @@
                 vm.localStorage = getDataAry;
                 this.getData();
               }
-              //console.log(getData)
-              
-
-              
             },
 
             methods: {
@@ -321,52 +335,66 @@
                 console.log('hi',item)
                 let isRepeat = vm.localStorage.indexOf(item)
                 if(isRepeat > -1){
-                  console.log('有重複了')
+                  console.log('取消關注')
+                  vm.localStorage.splice(isRepeat,1);
+                  let dataString = JSON.stringify(vm.localStorage);
+                  localStorage.setItem('toStared',dataString);
                   return
                 }else{
-                  console.log('沒重複')
+                  console.log('增加關注')
                   vm.localStorage.push (item)
                   let dataString = JSON.stringify(vm.localStorage);
                   localStorage.setItem('toStared',dataString);
                 }
                 
               },
-              statusCss : function(filter){     
+              statusCss : function(type,filter){     
+                let vm = this;
                 //filter是台北市、新北市…
                 //讓比對的屬性可以是變動的，如傳進的值是County或是SiteId
-
-                this.useSelect = [];       
-                this.allData.forEach((item, index) => {
-                  if (item.County === filter) {
-                    switch (item.Status) {
-                      case '良好': {
-                        item.isClass = 'status-aqi1';
-                        break;
-                      }
-                      case '普通': {
-                        item.isClass = 'status-aqi2';
-                        break;
-                      }
-                      case '對敏感族群不健康': {
-                        item.isClass = 'status-aqi3';
-                        break;
-                      }
-                      case '對所有族群不健康': {
-                        item.isClass = 'status-aqi4';
-                        break;
-                      }
-                      case '非常不健康': {
-                        item.isClass = 'status-aqi5';
-                        break;
-                      }
-                      case '危害': {
-                        item.isClass = 'status-aqi6';
-                        break;
-                      }
+                if(type == "County"){
+                  vm.useSelect = [];  
+                  vm.allData.forEach((item, index) => {
+                    if (item.County === filter) {
+                      vm.toCss(item)
+                      vm.useSelect.push(item);
                     };
-                    this.useSelect.push(item);
-                  };
-                });
+                  });
+                }else if(type == "SiteId"){
+                  vm.allData.forEach((item, index) => {
+                    if (item.SiteId === filter) {
+                        vm.toCss(item)
+                    };
+                  });
+                }
+              },
+              toCss: function(item){
+                switch (item.Status) {
+                  case '良好': {
+                    return item.isClass = 'status-aqi1';
+                    break;
+                  }
+                  case '普通': {
+                    return item.isClass = 'status-aqi2';
+                    break;
+                  }
+                  case '對敏感族群不健康': {
+                    return item.isClass = 'status-aqi3';
+                    break;
+                  }
+                  case '對所有族群不健康': {
+                    return item.isClass = 'status-aqi4';
+                    break;
+                  }
+                  case '非常不健康': {
+                    return item.isClass = 'status-aqi5';
+                    break;
+                  }
+                  case '危害': {
+                    return item.isClass = 'status-aqi6';
+                    break;
+                  }
+                };
               }
             },
             
@@ -404,6 +432,12 @@
 
           .status-aqi6 {
             background-color: #7e0023;
+          }
+          span.aqi{
+            width: 10px;
+            height: 10px;
+            display: inline-block;
+            margin-right: 5%;
           }
         </style>
 
