@@ -144,17 +144,18 @@
             <div class="col-lg-4 col-6"><p><span class="aqi status-aqi5"></span>非常不健康</p></div>
             <div class="col-lg-4 col-6"><p><span class="aqi status-aqi6"></span>危害</p></div>
           </div>
-          <rundata_focus :all_data="allData" :local_storage="localStorage" v-if='allData[0]' @is_card_css="isCardCss" @up_local_storage="upLocalStorage"></rundata_focus>
-          <rundata :all_data="allData" :local_storage="localStorage" :use_select2="useSelect" v-if='allData[0]' @is_card_css="isCardCss" @up_local_storage="upLocalStorage"></rundata>
+          <hr>
+          <citycard_focus :all_data="allData" :local_storage="localStorage"  @is_card_css="isCardCss" @up_local_storage="upLocalStorage" v-if='allData[0]'></citycard_focus>
+          <citycard_all :all_data="allData" :local_storage="localStorage" :use_select="useSelect" @is_card_css="isCardCss" @up_local_storage="upLocalStorage" v-if='allData[0]'></citycard_all>
         </div>
 
 
-        <script type="text/x-template" id="card_focus">
+        <script type="text/x-template" id="citycard_focus">
           <div class="row mb-3">
-            <div class="col-12"><h2>歷史關注的城市</h2></div>
+            <div class="col-12"><h3>歷史關注的城市</h3></div>
                 <slot v-if="local_storage.length > 0">
-                  <div class='col-lg-6 col-sm-12 mt-3' v-for="(item,index) in all_data" :value="item" v-if="item.focus">
-                    <div class="card"  :class="item.isClass">
+                  <div class='col-lg-6 col-sm-12 mt-3' v-for="(item,index) in all_data" v-if="item.focus">
+                    <div class="card" :class="item.isClass">
                       <div class="card-header" @click.prevent="item.focus=!item.focus, updata_focus(item)">{{item.SiteName}}
                         <a href="#" class="float-right" >     
                           <div v-if="item.focus == false">
@@ -186,20 +187,20 @@
           </div>
         </script>
 
-        <script type="text/x-template" id="card">
+        <script type="text/x-template" id="citycard_all">
           <div class="row mt-3">
-            <div class="col-12"> <h2>選擇要查詢的地區</h2></div>
+            <div class="col-12"> <h3>選擇要查詢的地區</h3></div>
             <div class="col-12">
-              <select id="" class="form-control mb-3" @change='getLocaData'>
+              <select class="form-control mb-3" @change='getLocaData'>
                 <option value="0" disabled selected>--- 請選擇城市 ---</option>
-                <option v-for="(item,i) in initOption" :value="item" >{{item}}</option>
+                <option v-for="(item,i) in initOption">{{item}}</option>
               </select>
             </div>
             
             
-            <div class="col-12" v-if='use_select2[0]'><p>查詢到城市空氣品質</p></div>
+            <div class="col-12" v-if='use_select[0]'><p>查詢到城市空氣品質</p></div>
             <slot>
-              <div class='col-lg-6 col-sm-12 mt-3' v-for="(item,index) in use_select2" :value="item">
+              <div class='col-lg-6 col-sm-12 mt-3' v-for="(item,index) in use_select">
                 <div class="card"  :class="item.isClass">
                   <div class="card-header" @click.prevent="item.focus=!item.focus, updata_focus(item)">{{item.SiteName}}
                     <a href="#" class="float-right" >     
@@ -228,23 +229,21 @@
         </script>
 
 
-        <script>
-          // API 來源
-          // https://opendata.epa.gov.tw/Data/Contents/AQI/
-          Vue.component('rundata_focus', {
-            template: '#card_focus',
+        <script>        
+          Vue.component('citycard_focus', {
+            template: '#citycard_focus',
             props: ['all_data','local_storage'],
             created: function () {
-              this.init()
+              this.init();
             },
             methods: {
               init: function(){
                 const vm = this;
-                vm.all_data.forEach((allData_item)=>{
-                  vm.local_storage.forEach((locaData_item)=>{
-                    if(allData_item.SiteId == locaData_item){
-                      allData_item.focus = true;
-                      this.$emit('is_card_css', 'SiteId',allData_item.SiteId);
+                vm.all_data.forEach((all_item)=>{
+                  vm.local_storage.forEach((loca_item)=>{
+                    if(all_item.SiteId == loca_item){
+                      all_item.focus = true;
+                      this.$emit('is_card_css', 'SiteId',all_item.SiteId);
                     }
                   })
                 })
@@ -256,31 +255,29 @@
             }
           });
 
-          Vue.component('rundata', {
-            template: '#card',
-            props: ['all_data','use_select2','local_storage'],
+          Vue.component('citycard_all', {
+            template: '#citycard_all',
+            props: ['all_data','use_select','local_storage'],
             data: function () {
               return {
                 initOption: [],
-                locaData: [],
               }
             },
             created: function () {
-              //初始下拉選單
+              //初始下拉選項
               const vm = this
-              const arr = vm.initOption
+              const cityOption = vm.initOption
               vm.all_data.forEach((item, index) => {
-                if (arr.indexOf(item.County) === -1) {
-                  arr.push(item.County)
+                if (cityOption.indexOf(item.County) === -1) {
+                  cityOption.push(item.County)
                 }
               })
             },
             methods: {
               getLocaData: function () {
-                //使用者查詢的區域的城市資料
-                this.locaData = [];
-                let isOption = document.querySelector("select").value;
-                this.$emit('is_card_css', 'County',isOption);
+                //使用者查詢區域的城市資料
+                let optionValue = document.querySelector("select").value;
+                this.$emit('is_card_css', 'County',optionValue);
               },
               updata_focus: function(item){
                 //加入瀏覽器暫存
@@ -298,7 +295,8 @@
             },
             created: function () {
               const vm = this;
-              //抓取JSON
+              // 抓取 API 來源(JSON)
+              // https://opendata.epa.gov.tw/Data/Contents/AQI/
               const api = 'http://opendata2.epa.gov.tw/AQI.json';
               $.get(api).then(function (response) {
                 response.forEach((item, index) => {
@@ -307,31 +305,31 @@
                 })
               });             
               //抓取localStorage
-              const getData = localStorage.getItem('toStared');
-              let getDataAry
-              if(getData == null){
-                getDataAry = []
-                vm.localStorage = getDataAry;
+              const getLocalData = localStorage.getItem('isFocus');
+              let getLocalDataArr;
+              if(getLocalData == null){
+                getLocalDataArr = [];
+                vm.localStorage = getLocalDataArr;
               }else{
-                getDataAry = JSON.parse(getData);
-                vm.localStorage = getDataAry;
+                getLocalDataArr = JSON.parse(getLocalData);
+                vm.localStorage = getLocalDataArr;
               }
             },
             methods: {
               upLocalStorage : function(SiteId){
                 const vm = this;
-                let isRepeat = vm.localStorage.indexOf(SiteId)
+                let isRepeat = vm.localStorage.indexOf(SiteId);
                 if(isRepeat > -1){
                   //console.log('取消關注')
                   vm.localStorage.splice(isRepeat,1);
                   let dataString = JSON.stringify(vm.localStorage);
-                  localStorage.setItem('toStared',dataString);
+                  localStorage.setItem('isFocus',dataString);
                   return
                 }else{
                   //console.log('增加關注')
-                  vm.localStorage.push (SiteId)
+                  vm.localStorage.push (SiteId);
                   let dataString = JSON.stringify(vm.localStorage);
-                  localStorage.setItem('toStared',dataString);
+                  localStorage.setItem('isFocus',dataString);
                 }               
               },
               isCardCss : function(type,filter){     
@@ -341,7 +339,7 @@
                   vm.useSelect = [];  
                   vm.allData.forEach((item, index) => {
                     if (item.County === filter) {
-                      vm.cardCssStyle(item)
+                      vm.cardCssStyle(item);
                       vm.useSelect.push(item);
                     };
                   });
