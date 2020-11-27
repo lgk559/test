@@ -145,62 +145,34 @@
             <div class="col-lg-4 col-6"><p><span class="aqi status-aqi6"></span>危害</p></div>
           </div>
           <hr>
-          <citycard_focus :all_data="allData" :local_storage="localStorage"  @is_card_css="isCardCss" @up_local_storage="upLocalStorage" v-if='allData[0]'></citycard_focus>
-          <citycard_all :all_data="allData" :local_storage="localStorage" :use_select="useSelect" @is_card_css="isCardCss" @up_local_storage="upLocalStorage" v-if='allData[0]'></citycard_all>
-        </div>
-
-
-        <script type="text/x-template" id="citycard_focus">
-          <div class="row mb-3">
-            <div class="col-12"><h3>歷史關注的城市</h3></div>
-                <slot v-if="local_storage.length > 0">
-                  <div class='col-lg-6 col-sm-12 mt-3' v-for="(item,index) in all_data" v-if="item.focus">
-                    <div class="card" :class="item.isClass">
-                      <div class="card-header" @click.prevent="item.focus=!item.focus, updata_focus(item)">{{item.SiteName}}
-                        <a href="#" class="float-right" >     
-                          <div v-if="item.focus == false">
-                            <i class="far fa-star"></i>
-                          </div>
-                        </a>
-                        <a href="#" class="float-right">
-                          <div v-if="item.focus == true" >
-                            <i class="fas fa-star"></i>
-                          </div>
-                        </a>
-                      </div>
-                      <div class="card-body" >
-                        <ul class="list-unstyled" >
-                          <li>AQI 指數: {{item.AQI}}</li>
-                          <li>PM2.5: {{ item["PM2.5"] }}</li>
-                          <li>說明: {{item.Status}}</li>
-                        </ul>
-                        <p>{{item.PublishTime}}</p>          
-                      </div>
-                    </div>
-                  </div>
-              </slot>
-              <slot v-if="local_storage.length == 0">
-                <div class="col-12">
-                  <p>喔喔!! 查詢不到歷史關注城市<br>請從下方選擇要查詢的地區，並點擊城市卡右上方的星號加入關注</p>
-                </div>
-            </slot>
+          <div class="row">
+            <div class="col-12"> <h3>歷史關注城市</h3></div>  
           </div>
-        </script>
 
-        <script type="text/x-template" id="citycard_all">
-          <div class="row mt-3">
-            <div class="col-12"> <h3>選擇要查詢的地區</h3></div>
+          <citycard_focus :show_data="localStorage"  @up_local_storage="upLocalStorage" v-if='allData[0]'>
+            <div class="col-12" v-if='focusArr.length==0'>
+              <p>no data!</p>
+            </div>
+          </citycard_focus>
+        
+          <div class="row">
+            <div class="col-12"> <h3>選擇要查詢的地區</h3></div>         
             <div class="col-12">
-              <select class="form-control mb-3" @change='getLocaData'>
-                <option value="0" disabled selected>--- 請選擇城市 ---</option>
+              <select class="form-control mb-3" @change='getLocaData' v-if='initOption[0]'>
+                <option value="" disabled selected> --- 請選擇城市 --- </option>
                 <option v-for="(item,i) in initOption">{{item}}</option>
               </select>
             </div>
-            
-            
-            <div class="col-12" v-if='use_select[0]'><p>查詢到城市空氣品質</p></div>
+          </div>
+
+          <citycard_use-select :show_data="useSelect"  @up_local_storage="upLocalStorage" v-if='allData[0]'></citycard_use-select>
+
+        </div>
+
+        <script type="text/x-template" id="citycard_use-select">
+          <div class="row mb-5">
             <slot>
-              <div class='col-lg-6 col-sm-12 mt-3' v-for="(item,index) in use_select">
+              <div class='col-lg-3 col-sm-12 mt-3' v-for="(item,index) in show_data">
                 <div class="card"  :class="item.isClass">
                   <div class="card-header" @click.prevent="item.focus=!item.focus, updata_focus(item)">{{item.SiteName}}
                     <a href="#" class="float-right" >     
@@ -231,57 +203,23 @@
 
         <script>        
           Vue.component('citycard_focus', {
-            template: '#citycard_focus',
-            props: ['all_data','local_storage'],
-            created: function () {
-              this.init();
-            },
+            template: '#citycard_use-select',
+            props: ['show_data'],
             methods: {
-              init: function(){
-                const vm = this;
-                vm.all_data.forEach((all_item)=>{
-                  vm.local_storage.forEach((loca_item)=>{
-                    if(all_item.SiteId == loca_item){
-                      all_item.focus = true;
-                      this.$emit('is_card_css', 'SiteId',all_item.SiteId);
-                    }
-                  })
-                })
-              },
               updata_focus: function(item){
                 //加入瀏覽器暫存
-                this.$emit('up_local_storage',item.SiteId) 
+                this.$emit('up_local_storage',item) 
               }
             }
           });
 
-          Vue.component('citycard_all', {
-            template: '#citycard_all',
-            props: ['all_data','use_select','local_storage'],
-            data: function () {
-              return {
-                initOption: [],
-              }
-            },
-            created: function () {
-              //初始下拉選項
-              const vm = this
-              const cityOption = vm.initOption
-              vm.all_data.forEach((item, index) => {
-                if (cityOption.indexOf(item.County) === -1) {
-                  cityOption.push(item.County)
-                }
-              })
-            },
-            methods: {
-              getLocaData: function () {
-                //使用者查詢區域的城市資料
-                let optionValue = document.querySelector("select").value;
-                this.$emit('is_card_css', 'County',optionValue);
-              },
+          Vue.component('citycard_use-select', {
+            template: '#citycard_use-select',
+            props: ['show_data'],
+            methods: {  
               updata_focus: function(item){
                 //加入瀏覽器暫存
-                this.$emit('up_local_storage',item.SiteId) 
+                this.$emit('up_local_storage',item) 
               }
             }
           })
@@ -292,6 +230,9 @@
               allData: [], //全部的資料
               localStorage: [], //歷史關注
               useSelect: [], //使用者查詢的區域
+              focusArr:[], //關注城市的id
+              initOption: ['所有資料'], //初始下拉選項
+              optionValue: '' //select選單
             },
             created: function () {
               const vm = this;
@@ -301,52 +242,87 @@
               $.get(api).then(function (response) {
                 response.forEach((item, index) => {
                   item.focus = false;
-                  vm.allData.push(item)
+                  vm.allData.push(item);
+                  vm.initCard();          
                 })
-              });             
-              //抓取localStorage
-              const getLocalData = localStorage.getItem('isFocus');
-              let getLocalDataArr;
-              if(getLocalData == null){
-                getLocalDataArr = [];
-                vm.localStorage = getLocalDataArr;
-              }else{
-                getLocalDataArr = JSON.parse(getLocalData);
-                vm.localStorage = getLocalDataArr;
-              }
+              });  
             },
             methods: {
-              upLocalStorage : function(SiteId){
+              initCard: function(){
                 const vm = this;
-                let isRepeat = vm.localStorage.indexOf(SiteId);
-                if(isRepeat > -1){
-                  //console.log('取消關注')
-                  vm.localStorage.splice(isRepeat,1);
-                  let dataString = JSON.stringify(vm.localStorage);
-                  localStorage.setItem('isFocus',dataString);
-                  return
-                }else{
-                  //console.log('增加關注')
-                  vm.localStorage.push (SiteId);
-                  let dataString = JSON.stringify(vm.localStorage);
-                  localStorage.setItem('isFocus',dataString);
-                }               
+                const cityOption = vm.initOption;
+                //初始localStorage
+                vm.initLocalStorage();
+                //初始卡片樣式
+                vm.allData.forEach((item, index)=>{
+                  vm.cardCssStyle(item)
+                })             
+                //初始下拉選項
+                vm.allData.forEach((item, index) => {
+                  if (cityOption.indexOf(item.County) === -1) {
+                    cityOption.push(item.County)
+                  }
+                });
+                //印出卡片
+                vm.getLocaData();
               },
-              isCardCss : function(type,filter){     
-                //依照傳進的參數type是County或是SiteId，執行比對的方式
+              initLocalStorage : function(){
+                //抓取localStorage
+                const vm = this;
+                vm.localStorage = [];
+                vm.focusArr = []
+                var getData = localStorage.getItem('isFocus');
+                if(getData == null){
+                  return;
+                }else{ 
+                  vm.localStorage = JSON.parse(getData);
+                  vm.localStorage.forEach((item)=>{
+                    vm.focusArr.push(item.SiteId)
+                  })
+                  vm.allData.forEach((all_item)=>{
+                  vm.localStorage.forEach((loca_item)=>{
+                      if(all_item.SiteId == loca_item.SiteId){
+                        all_item.focus = true;
+                      }
+                    })
+                  })
+                }
+              },
+              upLocalStorage : function(item){
+                const vm = this;   
+                if(vm.localStorage.length === vm.focusArr.length){              
+                  let isRepeat = vm.focusArr.indexOf(item.SiteId);
+                  if(isRepeat > -1){
+                    console.log('取消關注')
+                    vm.localStorage.splice(isRepeat,1);
+                    vm.focusArr.splice (isRepeat,1);
+                    let dataString = JSON.stringify(vm.localStorage);
+                    localStorage.setItem('isFocus',dataString);
+                    return
+                  }else{
+                    console.log('增加關注')
+                    vm.localStorage.push (item);
+                    vm.focusArr.push (item.SiteId);
+                    let dataString = JSON.stringify(vm.localStorage);
+                    localStorage.setItem('isFocus',dataString);
+                  }    
+                }else{
+                  console.log('initLocalStorage')
+                  vm.initLocalStorage()
+                }           
+              },
+              getLocaData: function () {
+                //使用者查詢區域的城市資料
                 let vm = this;
-                if(type == "County"){
-                  vm.useSelect = [];  
+                vm.optionValue = document.querySelector("select").value;
+                vm.useSelect = [];
+                if(vm.optionValue == '所有資料' || vm.optionValue ==  ""){
+                  vm.useSelect = vm.allData;
+                }else{
                   vm.allData.forEach((item, index) => {
-                    if (item.County === filter) {
+                    if (item.County === vm.optionValue) {
                       vm.cardCssStyle(item);
                       vm.useSelect.push(item);
-                    };
-                  });
-                }else if(type == "SiteId"){
-                  vm.allData.forEach((item, index) => {
-                    if (item.SiteId === filter) {
-                        vm.cardCssStyle(item)
                     };
                   });
                 }
@@ -355,32 +331,25 @@
                 switch (item.Status) {
                   case '良好': {
                     return item.isClass = 'status-aqi1';
-                    break;
                   }
                   case '普通': {
                     return item.isClass = 'status-aqi2';
-                    break;
                   }
                   case '對敏感族群不健康': {
                     return item.isClass = 'status-aqi3';
-                    break;
                   }
                   case '對所有族群不健康': {
                     return item.isClass = 'status-aqi4';
-                    break;
                   }
                   case '非常不健康': {
                     return item.isClass = 'status-aqi5';
-                    break;
                   }
                   case '危害': {
                     return item.isClass = 'status-aqi6';
-                    break;
                   }
                 };
-              }
-            },
-            
+              }     
+            },            
           });
         </script>
         <style>
@@ -418,5 +387,4 @@
     </div>
   </div>
 </body>
-
 </html>
