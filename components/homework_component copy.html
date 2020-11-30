@@ -209,7 +209,7 @@
               updata_focus: function(item){
                 //加入瀏覽器暫存
                 this.$emit('up_local_storage',item) 
-              }
+              },
             }
           });
 
@@ -321,16 +321,16 @@
                 }else{
                   vm.allData.forEach((item, index) => {
                     if (item.County === vm.optionValue) {
-                      vm.cardCssStyle(item);
                       vm.useSelect.push(item);
                     };
                   });
                 }
               },
               cardCssStyle: function(item){
+                //為每個項目增加一個isClass屬性。
                 switch (item.Status) {
                   case '良好': {
-                    return item.isClass = 'status-aqi1';
+                    return item.isClass = 'status-aqi1';  
                   }
                   case '普通': {
                     return item.isClass = 'status-aqi2';
