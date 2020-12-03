@@ -99,110 +99,105 @@
 <div id="app">
   <table class="table">
     <tbody>
-      <!-- <tr is="row-component" v-for="(item, key) in data" :item2="item" :key="key"></tr> -->
-      <!-- <button class="btn btn-sm btn-primary" @click="addData1()">寫入資料</button> -->
-      <row-component v-for="(item, key) in data" :item2="item" :key="key"> </row-component>
+      <tr v-if="data1.allData[0]" v-for="(item, key) in data1.allData" :class="item.isClass">
+        <td >{{item.County }}</td>
+        <td >{{item.SiteName }}</td>
+        <td >{{item.AQI }}</td>
+        <td >{{item["PM2.5"] }}</td>
+        <td >{{item.Status }}</td>
+        <td >{{item.PublishTime }}</td>
+      </tr>
     </tbody>
   </table>
-  
 </div>
 
-<script type="text/x-template" id="row-component">
-  <tr>
-    <td>{{ item2.name }}</td>
-    <td>
-      <span v-if="data.xx">{{ data.xx.cash }}</span>
-      <button class="btn btn-sm btn-primary" @click="addData()">顯示評語</button>
-    </td>
-    <td>
-      <span v-if="data.newData">{{ data.newData }}</span>
-      <button class="btn btn-sm btn-primary" @click="addOrder()">新增阿里不打的資料</button>
-    </td>
-    
-  </tr>
-
-  
-</script>
 
 <script>
-Vue.component('row-component', {
-  template: '#row-component',
-  props: ['item2'],
-  data: function() {
-    return {
-      data: {
-       
-      }
-    }
-  },
-  methods: {
-    addData: function() {
-      this.$set(this.data, 'xx', {
-        cash: this.item2.cash
-      })
-    },
-    addOrder: function() {
-      this.$set(this.data, 'newData', 'hi')
-    }
-  },
-  mounted: function() {
-    console.log('Component:', this)
-  }
-});
+
 
 
 var app = new Vue({
   el: '#app',
   data: {
-    data: [
-      {
-        name: '小明',
-        cash: 100,
-        icash: 500,
-      },
-      {
-        name: '杰倫',
-        cash: 10000,
-        icash: 5000,
-      },
-      {
-        name: '漂亮阿姨',
-        cash: 500,
-        icash: 500,
-      },
-      {
-        name: '老媽',
-        cash: 10000,
-        icash: 100,
-      },
-    ],
-      xx : function() {
-        return {
-          data: {}
-        }
-      }
-    },
-
-  mounted: function() {
-    console.log('Vue init:', this)
+    data1: {}, //先預先設置為物件，如果不想再一開始就預設的折中方式
+  },
+  created(){
+    const vm = this;
+    vm.$set(vm.data1, 'allData', []) //1.在已有的屬性再新增key，也就是allData
+    const api = 'http://opendata2.epa.gov.tw/AQI.json'; //抓取ajax資料
+    $.get(api).then(function (response) {
+      response.forEach((item, index) => {
+        vm.data1.allData.push(item); //2.放入資料到allData
+        vm.initCard();   //3. 將每筆資料，再新增一個屬性名，它會關聯是否套用特定class     
+      })
+    });  
   },
   methods: {
-    // addData1: function() {
-    //   let vm = this
-    //   console.log('hi')
-    //   // this.$set(this.data,4, {
-    //   //   name: '老K',
-    //   //   cash: 10000,
-    //   //   icash: 100,
-    //   // })
-    //   this.$set(this.xx,'data', 'hi')
-    //   console.log('Vue init:', this)
-    // }
+    initCard: function(){
+      const vm = this;
+      //初始卡片樣式
+      vm.data1.allData.forEach((item, index)=>{
+        vm.cardCssStyle(item)
+      })             
+    },
+    cardCssStyle: function(item){
+      //為每個項目增加一個isClass屬性。
+      switch (item.Status) {
+        case '良好': {
+          return item.isClass = 'status-aqi1';  
+        }
+        case '普通': {
+          return item.isClass = 'status-aqi2';
+        }
+        case '對敏感族群不健康': {
+          return item.isClass = 'status-aqi3';
+        }
+        case '對所有族群不健康': {
+          return item.isClass = 'status-aqi4';
+        }
+        case '非常不健康': {
+          return item.isClass = 'status-aqi5';
+        }
+        case '危害': {
+          return item.isClass = 'status-aqi6';
+        }
+      };
+    }     
   }
-  
 });
 
 </script>
+<style>
+  .status-aqi1 {
+    background-color: #c9e5ec;
+  }
+
+  .status-aqi2 {
+    background-color: #e9e993;
+  }
+
+  .status-aqi3 {
+    background-color: #ff7e00;
+  }
+
+  .status-aqi4 {
+    background-color: #ff0000;
+  }
+
+  .status-aqi5 {
+    background-color: #8f3f97;
+  }
+
+  .status-aqi6 {
+    background-color: #7e0023;
+  }
+  span.aqi{
+    width: 10px;
+    height: 10px;
+    display: inline-block;
+    margin-right: 5%;
+  }
+</style>
 
 <!-- 
 

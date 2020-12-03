@@ -127,13 +127,12 @@
 
 <script>
 // extend 是基礎建構的概念
-// var newExtend = Vue.extend()
-
-var childOne = {
-  props: ['item'],
+var newExtend = Vue.extend({
   data: function() {
     return {
-      data: {},
+      data: {
+        newExtend : "newExtend的資料"
+      },
       extendData: '這段文字是 extend 得到'
     }
   },
@@ -149,31 +148,29 @@ var childOne = {
     }
   },
   mounted: function() {
-    console.log('Extend:', this)
+    console.log('Extend:', "newExtend")
   }
+})
+
+var childOne = {
+  props: ['item'],
+  extends: newExtend,
 }
 
 var childTwo = {
   props: ['item'],
+  template: '#row-component-two',
+  extends: newExtend,
   data: function() {
     return {
-      data: {},
-      extendData: '這段文字是 extend 得到'
+      data: {
+        childTwo : "childTwo的資料"
+      },
+      extendData: '這段文字是 extend 得到' //屬性名稱與newExtend的data內的重複，元件的內容會取代之
     }
   },
-  template: '#row-component-two',
-  filters: {
-    dollarSign: function (n) {
-      return `$ ${n}`
-    },
-    currency: function(n) {
-      return n.toFixed(2).replace(/./g, function(c, i, a) {
-          return i && c !== "." && ((a.length - i) % 3 === 0) ? ',' + c : c;
-      });
-    }
-  },
-  mounted: function() {
-    console.log('Extend:', this)
+  mounted: function(){
+    console.log('childTwo')
   }
 }
 
@@ -181,23 +178,23 @@ var app = new Vue({
   el: '#app',
   data: {
     data: [
-      {
-        name: '小明',
+    {
+        name: '小明0(偶)',
         cash: 100,
         icash: 500,
       },
       {
-        name: '杰倫',
+        name: '杰倫1(單)',
         cash: 10000,
         icash: 5000,
       },
       {
-        name: '漂亮阿姨',
+        name: '漂亮阿姨2(偶)',
         cash: 500,
         icash: 500,
       },
       {
-        name: '老媽',
+        name: '老媽3(單)',
         cash: 10000,
         icash: 100,
       },

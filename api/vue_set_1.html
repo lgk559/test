@@ -99,9 +99,7 @@
 <div id="app">
   <table class="table">
     <tbody>
-      <!-- <tr is="row-component" v-for="(item, key) in data" :item2="item" :key="key"></tr> -->
-      <!-- <button class="btn btn-sm btn-primary" @click="addData1()">寫入資料</button> -->
-      <row-component v-for="(item, key) in data" :item2="item" :key="key"> </row-component>
+      <tr is="row-component" v-for="(item, key) in data" :item2="item" :key="key"></tr>
     </tbody>
   </table>
   
@@ -111,11 +109,11 @@
   <tr>
     <td>{{ item2.name }}</td>
     <td>
-      <span v-if="data.xx">{{ data.xx.cash }}</span>
+      <span v-if="data.copyItem2">{{ data.copyItem2.copyCash }}</span>
       <button class="btn btn-sm btn-primary" @click="addData()">顯示評語</button>
     </td>
     <td>
-      <span v-if="data.newData">{{ data.newData }}</span>
+      <span v-if="data.order">{{ data.order }}</span>
       <button class="btn btn-sm btn-primary" @click="addOrder()">新增阿里不打的資料</button>
     </td>
     
@@ -125,30 +123,31 @@
 </script>
 
 <script>
-Vue.component('row-component', {
-  template: '#row-component',
+var child = {
   props: ['item2'],
+  template: '#row-component',
   data: function() {
     return {
       data: {
-       
-      }
+					//2.透過元件事後新增的資料。舉例點擊第一個元件時會產生 
+					//// copyItem2 : {copyCash: 從本體傳到元件的item2.cash}
+			} 
     }
   },
   methods: {
     addData: function() {
-      this.$set(this.data, 'xx', {
-        cash: this.item2.cash
+      this.$set(this.data, 'copyItem2', {
+        copyCash: this.item2.cash  //1. 點擊模版的按鈕觸發此函式
       })
     },
-    addOrder: function() {
-      this.$set(this.data, 'newData', 'hi')
+    addOrder: function(){
+      this.$set(this.data, 'order', 'newTxt')
     }
   },
   mounted: function() {
     console.log('Component:', this)
   }
-});
+}
 
 
 var app = new Vue({
@@ -176,30 +175,13 @@ var app = new Vue({
         icash: 100,
       },
     ],
-      xx : function() {
-        return {
-          data: {}
-        }
-      }
-    },
-
+  },
+  components: {
+    "row-component": child
+  },
   mounted: function() {
     console.log('Vue init:', this)
-  },
-  methods: {
-    // addData1: function() {
-    //   let vm = this
-    //   console.log('hi')
-    //   // this.$set(this.data,4, {
-    //   //   name: '老K',
-    //   //   cash: 10000,
-    //   //   icash: 100,
-    //   // })
-    //   this.$set(this.xx,'data', 'hi')
-    //   console.log('Vue init:', this)
-    // }
   }
-  
 });
 
 </script>
