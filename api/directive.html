@@ -122,6 +122,9 @@ Vue.directive('validator', {
 
     // Email validate
     var re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+    //  ^( ([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*) | (\".+\")  ) //開頭為a且加 後面的字元b或字元c  @  字元d後面要接. + 再加一組，匹配次數為至少2次
+
+
     if (!re.test(value)) {
       el.className = 'form-control is-invalid'
     } else {
@@ -135,6 +138,7 @@ Vue.directive('validator', {
     var currentModel = vnode.data.directives.find(function(o) {
         return o.name === 'model';
     }).expression;
+    console.log(currentModel) //email
     var value = vnode.context[currentModel];
 
     var re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;

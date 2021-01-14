@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Mixins</title>
+    <title>自定義指令</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="images/favicon.ico" rel="shortcut icon">
     <meta charset="UTF-8">
@@ -66,13 +66,13 @@
     
   
     
-      <a href="/api/mixin.html"  class="btn btn-block btn-primary active">
+      <a href="/api/mixin.html"  class="btn btn-block btn-link">
         Vue Mixins
       </a>
     
   
     
-      <a href="/api/directive.html"  class="btn btn-block btn-link">
+      <a href="/api/directive.html"  class="btn btn-block btn-primary active">
         自定義指令
       </a>
     
@@ -88,7 +88,7 @@
         
         <div class="col-md-9 post">      
           <!-- 練習開始 -->
-          <h1 class="mt-0 text-muted">Mixins</h1>
+          <h1 class="mt-0 text-muted">自定義指令</h1>
           
 <div class="alert alert-secondary">
   <ol class="mb-0">
@@ -97,128 +97,110 @@
 </div>
 
 <div id="app">
-  <table class="table">
-    <tbody>
-      <tr is="row-component" v-for="(item, key) in data" 
-        :item="item" :key="key"></tr>
-    </tbody>
-  </table>
-  {{ data[1].cash | currency}}
+  <input type="email" v-model="email" v-focus v-validator="{ className: 'form-control' }">
 </div>
 
-<script type="text/x-template" id="row-component">
-  <tr>
-    <td>{{ item.name }}</td>
-    <td>{{ item.cash | currency | dollarSign }}</td>
-    <td>{{ item.icash | currency | dollarSign }}</td>
-  </tr>
-</script>
-
 <script>
-// mixin 是多個混合的概念
-var mixinFilter = {
-  filters: {
-    currency: function(n) {
-      return n.toFixed(2).replace(/./g, function(c, i, a) {
-          return i && c !== "." && ((a.length - i) % 3 === 0) ? ',' + c : c;
-      });
-    }
-  },
-}
-var newExtend = Vue.extend({
-  template: '#row-component',
-  data: function() {
-    return {
-      data: {},
-    }
-  },
-  filters: {
-    dollarSign: function (n) {
-      return `$ ${n}`
-    },
-  },
-  mounted: function() {
-    console.log('Extend:', "newExtend")
+// 官方文件 https://cn.vuejs.org/v2/guide/custom-directive.html
+
+Vue.directive('focus',{
+  inserted : function(el){
+    el.focus(); //focus()為js函式
   }
 })
 
-Vue.component('row-component', {
-  props: ['item'],
-  mixins: [mixinFilter,newExtend],
-  mounted () {
-    console.log('這段是 Mixin 產生')
+Vue.directive('validator',{
+  bind: function(el,binding,vnode){
+    console.log('bind', el, binding, vnode);
+    el.className = "form-control"
+    // let value = el.value;
+    // let re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+    // //console.log(re.test(value))
+    // if(!re.test(value)){
+    //   //如果不正確的話執行
+    //   el.className = 'form-control is-invalid'
+    // }else{
+    //   el.className = 'form-control is-valid'
+    // }
+  },
+  update: function(el,binding,vnode){
+    let value = el.value;
+    let re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+    //console.log(re.test(value))
+    if(!re.test(value)){
+      //如果不正確的話執行
+      el.className = 'form-control is-invalid'
+    }else{
+      el.className = 'form-control is-valid'
+    }
   }
-});
-
+})
 
 var app = new Vue({
   el: '#app',
   data: {
-    data: [
-      {
-        name: '小明',
-        cash: 100,
-        icash: 500,
-      },
-      {
-        name: '杰倫',
-        cash: 10000,
-        icash: 5000,
-      },
-      {
-        name: '漂亮阿姨',
-        cash: 500,
-        icash: 500,
-      },
-      {
-        name: '老媽',
-        cash: 10000,
-        icash: 100,
-      },
-    ]
+    email: 'aaa',
   },
-  mixins: [mixinFilter],
   mounted: function() {
     console.log('Vue init:', this)
   }
 });
+
 </script>
 
 <!-- 
-var mixinFilter = {
-  template: '#row-component',
-  filters: {
-    dollarSign: function (n) {
-      return `$ ${n}`
-    },
-    currency: function(n) {
-      return n.toFixed(2).replace(/./g, function(c, i, a) {
-          return i && c !== "." && ((a.length - i) % 3 === 0) ? ',' + c : c;
-      });
-    }
+Vue.directive('focus', {
+  inserted: function(el) {
+    el.focus()
   }
-}
+})
 
-var mixinMounted = {
-  data: function() {
-    return {
-      dataMixins: 'Mixins Data'
+Vue.directive('validator', {
+  update: function(el, binding, vnode) {
+    console.log('update', el.value, el.className, vnode);
+
+    // 尋找當前的 model 名稱
+    var currentModel = vnode.data.directives.find(function(o) {
+        return o.name === 'model';
+    }).expression;
+    
+    // 從當前 Model 取值
+    var value = vnode.context[currentModel];
+
+    // Email validate
+    var re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+    if (!re.test(value)) {
+      el.className = 'form-control is-invalid'
+    } else {
+      el.className = 'form-control is-valid'
     }
   },
-  mounted () {
-    console.log('這段是 Mixin 產生')
-  }
-}
+  bind: function(el, binding, vnode) {
+    console.log('bind', el, binding, vnode);
+    el.className = binding.value.className
 
-Vue.component('row-component', {
-  props: ['item'],
-  data: function() {
-    return {
-      data: {},
+    var currentModel = vnode.data.directives.find(function(o) {
+        return o.name === 'model';
+    }).expression;
+    var value = vnode.context[currentModel];
+
+    var re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+    if (!re.test(value)) {
+      el.className = 'form-control is-invalid'
+    } else {
+      el.className = 'form-control is-valid'
     }
+  }
+});
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    email: 'aaa',
   },
-  template: '#row-component',
-  mixins: [mixinFilter, mixinMounted]
+  mounted: function() {
+    console.log('Vue init:', this)
+  }
 });
 --> 
         </div>

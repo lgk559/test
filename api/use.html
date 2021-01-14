@@ -97,9 +97,19 @@
 </div>
 
 <div id="app">
-  
+  <b-btn v-b-modal="'myModal'">Show Modal</b-btn>
+  <b-modal id="myModal">
+    Hello From My Modal!
+  </b-modal>
 </div>
 
+<!-- <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"/>
+<script src="//unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
+<script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script> -->
+
+<link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css" />
+<script src="//polyfill.io/v3/polyfill.min.js?features=es2015%2CIntersectionObserver" crossorigin="anonymous"></script>
+<script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script>
 
 
 <script>
@@ -112,6 +122,7 @@ var app = new Vue({
   data: {},
 });
 </script>
+
 
 
 <!-- 
