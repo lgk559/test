@@ -144,12 +144,12 @@
   <h4>綁定行內樣式</h4>
   <p>測試從本機端push遠端</p>
   <p>請用不同方式綁定以下行內樣式</p>
-  <div class="box"></div>
+  <div class="box" :style="{backgroundColor:'red' , borderWidth:'5px' ,userSelect:'none'}"></div>
   <div class="box" :style="styleObject"></div>
-  <div class="box"></div>
+  <div class="box" :style="[styleObject , styleObject2, {borderColor: '#ccc'}]"></div>
   <hr>
   <h5>自動加上 Prefix (每個版本結果不同)333</h5>
-  <div class="box"></div>
+  <div class="box" :style="styleObject3"></div>
 </div>
 
 <script>
@@ -170,7 +170,8 @@ var app = new Vue({
     // 使用駝峰式命名
     styleObject: {
       backgroundColor: 'red',
-      borderWidth: '5px'
+      borderWidth: '5px',
+      userSelect: 'none'
     },
     styleObject2: {
       boxShadow: '3px 3px 5px rgba(0, 0, 0, 0.16)'
